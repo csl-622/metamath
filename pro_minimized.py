@@ -21,7 +21,7 @@ def generate_nodes(chapter_number):
     text = "" # Contains text of input chapter
     if (chapter_number == 100):
         for x in range(1, 14):
-            chapter_number(x);
+            generate_nodes(x);
     else:
         page_start = chapter_pages[chapter_number - 1] # starting page of the chapter
         page_end = chapter_pages[chapter_number] - 1 # ending page of the chapter
@@ -64,13 +64,6 @@ def generate_nodes(chapter_number):
 
 num=input("Enter chapter number: (1-13) and 100 for complete book :- ")
 generate_nodes(int(num))
-
-color_map = []
-for node in G:
-    if node <10:
-        color_map.append('blue')
-    else: color_map.append('green')
-nx.draw(G,node_color = color_map,with_labels = True)
 
 nx.draw(G,with_labels = True, node_color = 'r')
 plt.show()
