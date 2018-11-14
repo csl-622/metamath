@@ -131,6 +131,20 @@ print("in degrees of all the nodes:",in_degrees)
 print('--------------------------------------------------------------------')
 print("out degrees of all the nodes:",out_degrees)
 print('--------------------------------------------------------------------')
+abc=[]
+abc1=[]
+for i in in_degrees:
+    if i[1]==0:
+        abc.append(i[0])
+print("the nodes with in degree 0:",abc)
+print("number of nodes with in degree 0:",len(abc))
+print('--------------------------------------------------------------------')
+for i in out_degrees:
+    if i[1]==0:
+        abc1.append(i[0])
+print("the nodes with 0 out degree:",abc1)
+print("number of nodes with 0 out degree :",len(abc1))
+print('--------------------------------------------------------------------')
 print("communities:")
 #the folowing few lines compute the communities which exist in graph which we have printed
 #the algorithm used here is girvan newman but we still don't know the threshold used to compute the communities
