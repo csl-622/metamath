@@ -1,5 +1,6 @@
 import networkx as nx
 import re
+import csv
 import matplotlib.pyplot as plt
 import PyPDF2 
 from networkx.algorithms import community
@@ -29,6 +30,7 @@ e=[]
 # else if statement checks pa variable whcich chapter is representing to choose the value of count and page to read and print the graph
 #somo stores all the text which we have to make node in our graph 
 # we have used to while loop to iterate from starting page numbe to ending page number for making graph
+
 def chapter(pa):
     global count
     global pag
@@ -72,20 +74,44 @@ def chapter(pa):
     elif pa==13:
         count=504
         pag=539
-    elif pa==100:
+    elif pa==100 or pa==113:
+        for i in range(1,14):
+        	chapter(i)
+    elif pa==101:
         chapter(1)
-        chapter(2)
-        chapter(3)
-        chapter(4)
-        chapter(5)
-        chapter(6)
-        chapter(7)
-        chapter(8)
-        chapter(9)
-        chapter(10)
-        chapter(11)
-        chapter(12)
-        chapter(13)
+    elif pa==102:
+        for i in range(1,3):
+        	chapter(i)
+    elif pa==103:
+        for i in range(1,4):
+        	chapter(i)
+    elif pa==104:
+        for i in range(1,5):
+        	chapter(i)
+    elif pa==105:
+        for i in range(1,6):
+        	chapter(i)
+    elif pa==106:
+        for i in range(1,7):
+        	chapter(i)
+    elif pa==107:
+        for i in range(1,8):
+        	chapter(i)
+    elif pa==108:
+        for i in range(1,9):
+        	chapter(i)
+    elif pa==109:
+        for i in range(1,10):
+        	chapter(i)
+    elif pa==110:
+        for i in range(1,11):
+        	chapter(i)
+    elif pa==111:
+        for i in range(1,12):
+        	chapter(i)
+    elif pa==112:
+        for i in range(1,13):
+        	chapter(i)
     while count<pag:
         pageObj = pdfReader.getPage(count)
         text += pageObj.extractText().replace('\n','')
@@ -118,8 +144,16 @@ def chapter(pa):
     G.add_edges_from(b)
     #k=list(set(a) - set(list(G.nodes)))
 #num is taking input from user of the chapter number
+
 num=input("Enter chapter number:")
 chapter(int(num))
+with open('test.csv', 'w+') as csvFile:
+    writer=csv.writer(csvFile)
+    row=['Source','Target']
+    writer.writerow(row)
+    for i in G.edges():
+        writer.writerow(list(i))    
+csvFile.close()
 #next line is drawing graph with nodes being depicted as red
 nx.draw(G,with_labels = True, node_color = 'r')
 plt.show()
@@ -127,6 +161,16 @@ plt.show()
 in_degrees=list(G.in_degree(list(G.nodes)))
 #out_degrees computes and stores number of outgoing edge to each node
 out_degrees=list(G.out_degree(list(G.nodes)))
+with open('indegree.csv', 'w+') as csvFile:
+    writer=csv.writer(csvFile)
+    for i in in_degrees:
+        writer.writerow(list(i))    
+csvFile.close()
+with open('outdegree.csv', 'w+') as csvFile:
+    writer=csv.writer(csvFile)
+    for i in out_degrees:
+        writer.writerow(list(i))    
+csvFile.close()
 print("in degrees of all the nodes:",in_degrees)
 print('--------------------------------------------------------------------')
 print("out degrees of all the nodes:",out_degrees)
@@ -185,4 +229,5 @@ plt.show()
 #nx.draw(G2,with_labels = True, node_color = 'r')
 #plt.show()
 print("linear combinations for 1.33 is:",Counter(d))
+
 pdfFileObj.close() 
