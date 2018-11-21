@@ -1,4 +1,6 @@
+
 import networkx as nx
+import string
 import re
 import csv
 import matplotlib.pyplot as plt
@@ -30,7 +32,6 @@ e=[]
 # else if statement checks pa variable whcich chapter is representing to choose the value of count and page to read and print the graph
 #somo stores all the text which we have to make node in our graph 
 # we have used to while loop to iterate from starting page numbe to ending page number for making graph
-
 def chapter(pa):
     global count
     global pag
@@ -112,34 +113,49 @@ def chapter(pa):
     elif pa==112:
         for i in range(1,13):
         	chapter(i)
-    while count<pag:
+    while count<=pag:
         pageObj = pdfReader.getPage(count)
+        #text += pageObj.extractText().encode('ascii', 'ignore').decode().replace('\n','')
         text += pageObj.extractText().replace('\n','')
-        somo=re.findall("(?:Proposition\d{1,3}|\[Prop\.\d{1,2}\.\d{1,3}|\[Post\.\d|\[Def\.\d{1,2}\.\d{1,3}|\[C\.N\.\d)",text)
-        i=0
-        while i<len(somo):
-            if "Proposition" in somo[i]:
-                e=somo[i].replace('Proposition','')
-                m=str(pa)+"."+e
-                a.append(m)
-            elif "[Prop." in somo[i]:
-                t=somo[i].replace('[Prop.','')
-                p=t.replace(']','')
-                b.append((p,m))
-            elif "[Post." in somo[i]:
-                y=somo[i].replace('[Post.','p')
-                x=y.replace(']','')
-                b.append((x,m))
-            elif "[Def." in somo[i]:
-                y=somo[i].replace('[Def.','d')
-                x=y.replace(']','')
-                b.append((x,m))
-            elif "[C.N." in somo[i]:
-                y=somo[i].replace('[C.N.','c')
-                x=y.replace(']','')
-                b.append((x,m))
-            i+=1
+        #text=re.sub('^[\x00-\x7F]', '', text)
         count+=1
+    somo=re.findall("(?:Proposition\d{1,3}|Corollary|Lemma|\[Prop\.\d{1,2}\.\d{1,3}corr.|\[Prop\.\d{1,2}\.\d{1,3}|\[Post\.\d|\[Def\.\d{1,2}\.\d{1,3}|\[C\.N\.\d)",text)
+    i=0
+    while i<len(somo):
+        if "Proposition" in somo[i]:
+            e=somo[i].replace('Proposition','')
+            m=str(pa)+"."+e
+            a.append(m)
+        elif "Corollary" in somo[i]:
+            temp=m
+            m="corr"+m
+            b.append((temp,m))
+        elif "Lemma" in somo[i]:
+            temp=m
+            m="le"+m
+            b.append((temp,m))
+        elif "corr." in somo[i]:
+            yy=somo[i].replace('corr.','')
+            yy=yy.replace('[Prop.','')
+            yy="corr"+yy
+            b.append((yy,m))
+        elif "[Prop." in somo[i]:
+            t=somo[i].replace('[Prop.','')
+            p=t.replace(']','')
+            b.append((p,m))
+        elif "[Post." in somo[i]:
+            y=somo[i].replace('[Post.','p')
+            x=y.replace(']','')
+            b.append((x,m))
+        elif "[Def." in somo[i]:
+            y=somo[i].replace('[Def.','d')
+            x=y.replace(']','')
+            b.append((x,m))
+        elif "[C.N." in somo[i]:
+            y=somo[i].replace('[C.N.','c')
+            x=y.replace(']','')
+            b.append((x,m))
+        i+=1
     G.add_nodes_from(a)
     G.add_edges_from(b)
     #k=list(set(a) - set(list(G.nodes)))
@@ -214,20 +230,6 @@ lin_eq(num1)
 G1.add_edges_from(c)
 nx.draw(G1,with_labels = True, node_color = 'r')
 plt.show()
-#def ispresent(z,z1):
-#    if G.in_degree(z)==0:
-#        e.append(z)
-#    elif z==z1:
-#        return 0
-#    else:
-#        for i in list(G.predecessors(z)):
-#            c.append((i,z))
-#            ispresent(i)
-#    print("not present")
-#ispresent(1.33,1.1)
-#G1.add_edges_from(e)
-#nx.draw(G2,with_labels = True, node_color = 'r')
-#plt.show()
-print("linear combinations for 1.33 is:",Counter(d))
+print("linear combinations for ",num1," is:",Counter(d))
 
 pdfFileObj.close() 
