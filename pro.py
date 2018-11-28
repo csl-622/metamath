@@ -5,6 +5,7 @@ import re
 import csv
 import matplotlib.pyplot as plt
 import PyPDF2 
+from operator import itemgetter
 from networkx.algorithms import community
 from collections import Counter
 #G is chapter graph having propositions,postulates,definations and common notions as vertices.G is a directed graph.
@@ -163,10 +164,22 @@ def chapter(pa):
 
 num=input("Enter chapter number:")
 chapter(int(num))
+#manually adding the nodes
+with open('extra_edges.csv') as csvfile:
+	readCSV=csv.reader(csvfile,delimiter=',')
+	for row in readCSV:
+		if len(row)==4:
+			if int(row[2])==int(num) or (int(row[2])+100) <= int(num) or int(num) == 100:
+				G.remove_edge(row[0],row[1])
+		else:
+			if int(row[2])==int(num) or (int(row[2])+100) <= int(num) or int(num) == 100:
+				G.add_edge(row[0],row[1])
+csvfile.close()
 with open('test.csv', 'w+') as csvFile:
     writer=csv.writer(csvFile)
     row=['Source','Target']
     writer.writerow(row)
+    sorted_tuples = sorted(list(G.edges()), key=itemgetter(1))
     for i in G.edges():
         writer.writerow(list(i))    
 csvFile.close()
