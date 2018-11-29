@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar toolbar = findViewById(R.id.main_toolbar);
+        toolbar.setTitle("All Books");
 
         recyclerView = (RecyclerView) findViewById(R.id.rv_chapters);
 
@@ -60,6 +63,9 @@ public class MainActivity extends AppCompatActivity {
         chapterList.add(chapter);
         chapter = new Chapter(R.drawable.ic_graph, "Book 13");
         chapterList.add(chapter);
+        chapter = new Chapter(R.drawable.ic_graph, "All Books");
+        chapterList.add(chapter);
+
 
         mAdapter.notifyDataSetChanged();
     }

@@ -1,61 +1,75 @@
 package com.example.lab.metamaths;
 
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+
+import javax.annotation.Nullable;
 
 import de.blox.graphview.BaseGraphAdapter;
 import de.blox.graphview.Graph;
+import de.blox.graphview.GraphAdapter;
 import de.blox.graphview.GraphView;
 import de.blox.graphview.Node;
-import de.blox.graphview.tree.BuchheimWalkerAlgorithm;
-import de.blox.graphview.tree.BuchheimWalkerConfiguration;
 
-public class GraphActivity extends AppCompatActivity {
-
+public abstract class GraphActivity extends AppCompatActivity {
     private int nodeCount = 1;
+    private Node currentNode;
+    protected BaseGraphAdapter<ViewHolder> adapter;
+
+    private FirebaseFirestore db;
+
+    private static final String TAG = "GraphActivity";
+
+    private ArrayList<String> nodes_values = new ArrayList<>();
+    private ArrayList<Model> nodes_data = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_graph);
 
-        String title = getIntent().getStringExtra("book_number");
-        getSupportActionBar().setTitle(title);
+        setupToolbar();
 
-        GraphView graphView = findViewById(R.id.graph);
+        db = FirebaseFirestore.getInstance();
+        db.collection("test").addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                    nodes_values.add(document.getId());
+                    Model a = document.toObject(Model.class);
+                    nodes_data.add(a);
+                }
 
-        // example tree
-        final Graph graph = new Graph();
-        final Node node1 = new Node(getNodeText());
-        final Node node2 = new Node(getNodeText());
-        final Node node3 = new Node(getNodeText());
-        final Node node4 = new Node(getNodeText());
-        final Node node5 = new Node(getNodeText());
-        final Node node6 = new Node(getNodeText());
-        final Node node8 = new Node(getNodeText());
-        final Node node7 = new Node(getNodeText());
-        final Node node9 = new Node(getNodeText());
-        final Node node10 = new Node(getNodeText());
-        final Node node11 = new Node(getNodeText());
-        final Node node12 = new Node(getNodeText());
+                Log.i(TAG, "onEvent: " + nodes_values.size() + " " +  nodes_data.size());
 
-        graph.addEdge(node1, node2);
-        graph.addEdge(node1, node3);
-        graph.addEdge(node1, node4);
-        graph.addEdge(node2, node5);
-        graph.addEdge(node2, node6);
-        graph.addEdge(node6, node7);
-        graph.addEdge(node6, node8);
-        graph.addEdge(node4, node9);
-        graph.addEdge(node4, node10);
-        graph.addEdge(node4, node11);
-        graph.addEdge(node11, node12);
+                final Graph graph = createGraph(nodes_values, nodes_data);
+                setupAdapter(graph);
+            }
+        });
+    }
 
-        // you can set the graph via the constructor or use the adapter.setGraph(Graph) method
-        final BaseGraphAdapter<ViewHolder> adapter = new BaseGraphAdapter<ViewHolder>(this, R.layout.node, graph) {
+    private void setupAdapter(Graph graph) {
+        final GraphView graphView = findViewById(R.id.graph);
+
+        adapter = new BaseGraphAdapter<ViewHolder>(this, R.layout.node, graph) {
             @NonNull
             @Override
             public ViewHolder onCreateViewHolder(View view) {
@@ -64,29 +78,53 @@ public class GraphActivity extends AppCompatActivity {
 
             @Override
             public void onBindViewHolder(ViewHolder viewHolder, Object data, int position) {
-                viewHolder.mTextView.setText(data.toString());
+                viewHolder.textView.setText(data.toString());
             }
         };
+
+        setAlgorithm(adapter);
+
         graphView.setAdapter(adapter);
+        graphView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                currentNode = adapter.getNode(position);
+                //String xx = nodes_data.get(position).getIn_degree() + " " + nodes_data.get(position).getOut_degree();
 
-        // set the algorithm here
-        final BuchheimWalkerConfiguration configuration = new BuchheimWalkerConfiguration.Builder()
-                .setSiblingSeparation(100)
-                .setLevelSeparation(300)
-                .setSubtreeSeparation(300)
-                .setOrientation(BuchheimWalkerConfiguration.ORIENTATION_TOP_BOTTOM)
-                .build();
-        adapter.setAlgorithm(new BuchheimWalkerAlgorithm(configuration));
+
+                Snackbar.make(graphView, "Clicked on " + currentNode.getData().toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private String getNodeText() {
-        return "Node " + nodeCount++;
+    private void setupToolbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
+        if (ab != null) {
+            ab.setHomeAsUpIndicator(R.drawable.ic_arrow_back);
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
     }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
+    public abstract Graph createGraph(ArrayList<String> nodes_values, ArrayList<Model> nodes_data);
+    public abstract void setAlgorithm(GraphAdapter adapter);
 
     private class ViewHolder {
-        TextView mTextView;
+        TextView textView;
+
         ViewHolder(View view) {
-            mTextView = view.findViewById(R.id.textView);
+            textView = view.findViewById(R.id.textView);
         }
+    }
+
+    protected String getNodeText() {
+        return "Node " + nodeCount++;
     }
 }
